@@ -1,0 +1,32 @@
+{
+  "name": "github-blog-api",
+  "version": "1.0.0",
+  "description": "a github api wrapper exposing endpoints for a blog",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src -w -d lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geekodour/github-blog-api.git"
+  },
+  "keywords": [
+    "github",
+    "blog"
+  ],
+  "author": "Hrishikesh Barman <Hrishikesh Barman> (https://geekodour.github.io/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/geekodour/github-blog-api/issues"
+  },
+  "homepage": "https://github.com/geekodour/github-blog-api#readme",
+  "dependencies": {
+    "es6-promise": "4.1.0",
+    "isomorphic-fetch": "2.2.1"
+  },
+  "devDependencies": {
+    "babel-cli": "6.24.1",
+    "babel-preset-es2015": "6.24.1"
+  }
+}
