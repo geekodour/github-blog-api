@@ -5,3 +5,6 @@ a api wrapper around the github api to generate a blog
 ```
 npm install --save github-blog-api
 ```
+
+## Todo
+[ ] to add comment wrapper: auth + firebase setup

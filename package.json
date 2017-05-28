@@ -23,7 +23,9 @@
   "homepage": "https://github.com/geekodour/github-blog-api#readme",
   "dependencies": {
     "es6-promise": "4.1.0",
-    "isomorphic-fetch": "2.2.1"
+    "isomorphic-fetch": "2.2.1",
+    "marked": "0.3.6",
+    "parse-link-header": "1.0.0"
   },
   "devDependencies": {
     "babel-cli": "6.24.1",

@@ -1,55 +1,68 @@
 import fetch from 'isomorphic-fetch';
+import marked from 'marked';
+import linkHeaderParse from 'parse-link-header';
 
 const API_URL = "https://api.github.com";
 
 class blog {
-        // this `blog` will have all the needed methods related
-        // to the github api and a typical text blog
+
+        // blog({username:'myusername',repo:'myreponame'})
+
         constructor(options) {
-
-          this.settings = Object.assign({
-                author: {},
-                repo: '',
-                blogUrl: `${API_URL}/repos/${options.author}/${options.repo}/issues`
-          },options)
-
-          // fetch author information on init
-          fetch(`${API_URL}/users/${options.author}`)
-              .then(function(response) {
-                  if (response.status != 200) {
-                          console.log("something bad happned");
-                  }
-                  return response.json();
-              })
-              .then((author)=>{
-                  this.settings.author = {name:author.name};
-              })
-              .catch(function(e){
-                  console.log(e);
-              });
-        }
-
-        getBlogAuthor() {
-                return this.settings.author;
+          if(!(options.username && options.repo)){
+              throw "Need username and repo to create blog. Please provide.";
+          }
+          this.settings = {
+                username: options.username || '',
+                repo: options.repo || '',
+                posts: {
+                  per_page: 10,
+                  cur_page: 1,
+                  last_reached: false,
+                  next_page_url: ''
+                },
+                comments: {
+                  per_page: 10,
+                  cur_page: 1,
+                  last_reached: false,
+                  next_page_url: ''
+                },
+                blogUrl: `${API_URL}/repos/${options.username}/${options.repo}/issues`
+          };
         }
 
         fetchBlogPosts() {
-          // usage: app.getBlogPosts().then(posts=>console.log(posts))
-          return fetch(this.settings.blogUrl)
-              .then(function(response) {
+          let fetchUrl = this.settings.posts.next_page_url || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=${this.settings.posts.cur_page}&creator=${this.settings.username}`;
+
+          return fetch(fetchUrl)
+              .then((response)=>{
                   if (response.status != 200) {
-                          console.log("something bad happned");
+                          throw 'API did not respond properly';
+                  }
+                  let pageHeader = linkHeaderParse(response.headers._headers.link[0]);
+                  if(pageHeader.last){
+                    this.settings.posts.cur_page = pageHeader.next.page;
+                    this.settings.posts.next_page_url = pageHeader.next.url;
+                  }
+                  else{
+                    this.settings.posts.last_reached = true;
+                    // after the last_reached is set to true, `fetchBlogPosts` will be returning
+                    // the last request, stop calling `fetchBlogPosts` by checking last_reached
+                    // from external block
                   }
                   return response.json();
               })
               .then((posts)=>{
                       return posts.map((post)=>{
-                              return {
-                              body: post.body,
-                              id: post.number,
-                              title: post.title,
-                              date: post.created_at
-                              }
+                                  return {
+                                  body: post.body,
+                                  html: marked(post.body),
+                                  id: post.number,
+                                  title: post.title,
+                                  date: post.created_at,
+                                  labels: post.labels,
+                                  comments_no: post.comments
+                                  }
                       });
               })
               .catch(function(e){
@@ -65,15 +78,19 @@ class blog {
                   }
                   return response.json();
               })
-              .then(function(post) {
-                      return {
-                       title: post.title,
-                       id: post.number,
-                       labels: post.labels,
-                       comments: post.comments,
-                       date: post.created_at,
-                       body: post.body
-                      };
+              .then((post)=>{
+                 return {
+                         title: post.title,
+                         id: post.number,
+                         labels: post.labels,
+                         comments: post.comments,
+                         date: post.created_at,
+                         body: post.body,
+                         html: marked(post.body)
+                        };
+              })
+              .then(e=>{
+                return e;
               })
               .catch(function(e){
                   console.log(e);
@@ -81,15 +98,29 @@ class blog {
         }
 
         fetchBlogPostComments(postId) {
-          return fetch(this.settings.blogUrl+`/${postId}/comments`)
+                let fetchUrl = this.settings.comments.next_page_url || `${this.settings.blogUrl}/${postId}/comments?per_page=${this.settings.posts.per_page}&page=${this.settings.posts.cur_page}`;
+          return fetch(fetchUrl)
               .then(function(response) {
                   if (response.status != 200) {
+                          console.log(response.headers);
+
                           console.log("something bad happned");
                   }
                   return response.json();
               })
-              .then(function(post) {
-                      return post;
+              .then(function(comments) {
+                      return comments.map(comment=>{
+                        return {
+                          id: comment.id,
+                          user: {
+                                  username: comment.user.login,
+                                  avatar_url: comment.user.avatar_url
+                          },
+                          body: comment.body,
+                          created_at: comment.created_at,
+                          html: marked(comment.body)
+                        }
+                      });
               })
               .catch(function(e){
                   console.log(e);
