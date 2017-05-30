@@ -31,6 +31,10 @@ class blog {
           };
         }
 
+        setPost(postObj){
+                this.settings.posts = Object.assign(this.settings.posts,postObj);
+        }
+
         fetchBlogPosts() {
           let fetchUrl = this.settings.posts.next_page_url || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=${this.settings.posts.cur_page}&creator=${this.settings.username}`;
 
@@ -39,6 +43,7 @@ class blog {
                   if (response.status != 200) {
                           throw 'API did not respond properly';
                   }
+                  // NOTE: maybe Object.assign the pageHeader object to posts object
                   let pageHeader = linkHeaderParse(response.headers._headers.link[0]);
                   if(pageHeader.last){
                     this.settings.posts.cur_page = pageHeader.next.page;
@@ -46,6 +51,7 @@ class blog {
                   }
                   else{
                     this.settings.posts.last_reached = true;
+                    return [];
                     // after the last_reached is set to true, `fetchBlogPosts` will be returning
                     // the last request, stop calling `fetchBlogPosts` by checking last_reached
                     // from external block
@@ -53,6 +59,9 @@ class blog {
                   return response.json();
               })
               .then((posts)=>{
+                      /*if(this.settings.posts.last_reached){
+                        return [];
+                      }*/
                       return posts.map((post)=>{
                                   return {
                                   body: post.body,
