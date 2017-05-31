@@ -16,7 +16,7 @@ npm install --save github-blog-api
 ```
 
 # Usage
-```
+```javascript
 // ES5: var blog = require('github-blog-api');
 import blog from 'github-blog-api';
 
