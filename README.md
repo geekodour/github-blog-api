@@ -16,6 +16,9 @@ npm install --save github-blog-api
 ```
 
 # Usage
+
+### Basic Usage
+
 ```javascript
 // ES5: var blog = require('github-blog-api');
 import blog from 'github-blog-api';
@@ -31,22 +34,31 @@ lazyblog.fetchBlogPosts()
         .then(posts=>{console.log(posts)})
         .catch(err=>{console.log(err)});
 // OUTPUTS: 5 posts of page 1
+
 lazyblog.fetchBlogPosts()
         .then(posts=>{console.log(posts)})
         .catch(err=>{console.log(err)});
-// OUTPUTS: 5 posts of page 2
-
-// manually setting last_reached to false to do another fetchBlogPosts call
-// you need to do this only if you need to do a new fetchBlogPosts after or inbetween
-// calling the last fetchBlogPosts
-lazyblog.setPost({last_reached:false, next_page_url:''});
-lazyblog.fetchBlogPosts(['bug'])
-        .then(posts=>{console.log(posts)})
-        .catch(err=>{console.log(err)});
+// OUTPUTS: 5 posts of page 2 if exists else prints []
 
 // fetching comments with issueId
 lazyblog.fetchBlogPostComments(2)
         .then(comments=>{console.log(comments)})
+        .catch(err=>{console.log(err)});
+```
+
+### Calling fetchBlogPosts multiple times
+
+```javascript
+// manually setting last_reached to false to do another fetchBlogPosts call
+// you need to do this only if you need to do a new fetchBlogPosts after or inbetween
+// calling the last fetchBlogPosts
+
+// NOTE: setPost method is synchronous so use it with caution when using with fetchBlogPosts
+
+lazyblog.setPost({last_reached:false, next_page_url:''});
+
+lazyblog.fetchBlogPosts(['bug'])
+        .then(posts=>{console.log(posts)})
         .catch(err=>{console.log(err)});
 ```
 
@@ -69,4 +81,4 @@ The same idea applies for `fetchBlogPostComments`. please see code to know how i
 it does not have a `last_reached` so, just specifying other `postId` is enough.
 
 ## Todo
-[ ] to add comment wrapper: auth + firebase setup
+- [ ] to add comment wrapper: auth + firebase setup
