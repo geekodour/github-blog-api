@@ -4,6 +4,27 @@ import linkHeaderParse from 'parse-link-header';
 
 const API_URL = "https://api.github.com";
 
+/*
+ * The methods and properties inside the blog object are as follows:
+ * 1. settings: this is the state container of the blog
+ * 2. setPost and setComment: to update the posts and comments objects inside settings
+ * 3. fetchAllLabels: fetch all labels in the blog - does not contain count [need help]
+ * 4. fetchBlogPosts: fetches blog posts based on the posts object, takes labels[] as argument
+ * 5. fetchBlogPost: fetches a single blog post, takes issueId/postId as argument
+ * 6. fetchBlogPostComments: fetches comments based on the comments object, takes issueId/postId as argument
+ *
+ * Note on `fetchBlogPosts` usage:
+ * ------------------------------
+ * If `fetchBlogPosts` does not return all results in one page/response, repeated calls to `fetchBlogPosts` will be returning
+ * next results, once all results are done `blog.settings.posts.last_reached` will be set to `true` and an empty[] will
+ * be returned by the promise.
+ * library user should manually update `blog.settings.posts.last_reached` to false with setPost({last_reached:false})
+ * if `fetchBlogPosts` has to be called again after once being called completely.
+ *
+ * The same idea applies for `fetchBlogPostComments`. please see code to know how it is implemented.
+ * it does not have a `last_reached` so, just specifying other `postId` is enough.
+ * */
+
 class blog {
 
         // blog({username:'myusername',repo:'myreponame'})
@@ -17,16 +38,16 @@ class blog {
                 repo: options.repo || '',
                 posts: {
                   per_page: 10,
-                  cur_page: 1,
                   last_reached: false,
                   next_page_url: ''
                 },
                 comments: {
                   per_page: 10,
-                  cur_page: 1,
-                  last_reached: false,
+                  cur_post: null,
+                  done_posts: [],
                   next_page_url: ''
                 },
+                repoUrl: `${API_URL}/repos/${options.username}/${options.repo}`,
                 blogUrl: `${API_URL}/repos/${options.username}/${options.repo}/issues`
           };
         }
@@ -34,34 +55,68 @@ class blog {
         setPost(postObj){
                 this.settings.posts = Object.assign(this.settings.posts,postObj);
         }
+        setComment(commentObj){
+                this.settings.comments = Object.assign(this.settings.comments,commentObj);
+        }
 
-        fetchBlogPosts() {
-          let fetchUrl = this.settings.posts.next_page_url || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=${this.settings.posts.cur_page}&creator=${this.settings.username}`;
+        fetchAllLabels() {
+          return fetch(`${this.settings.repoUrl}/labels?per_page=90`)
+              .then((response)=>{
+                  if (response.status != 200) {
+                          throw 'API did not respond properly';
+                  }
+                  return response.json();
+              })
+              .then((labels)=>{
+                      return labels.map((label)=>{
+                                  return {
+                                  id: label.id,
+                                  name: label.name,
+                                  color: label.color
+                                  }
+                      });
+              })
+              .catch(function(e){
+                  console.log(e);
+              });
+        }
+
+        fetchBlogPosts(labels=[]) {
+          // need a cleaner and DRY way to write this function
+          // it still works
+          if(this.settings.posts.last_reached){
+                  return Promise.resolve([]);
+          }
+          let fetchUrl =
+                this.settings.posts.next_page_url
+                || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=1&creator=${this.settings.username}&labels=${labels.join(',')}`;
 
           return fetch(fetchUrl)
               .then((response)=>{
                   if (response.status != 200) {
                           throw 'API did not respond properly';
                   }
-                  // NOTE: maybe Object.assign the pageHeader object to posts object
-                  let pageHeader = linkHeaderParse(response.headers._headers.link[0]);
-                  if(pageHeader.last){
-                    this.settings.posts.cur_page = pageHeader.next.page;
-                    this.settings.posts.next_page_url = pageHeader.next.url;
+
+                  if(response.headers._headers.hasOwnProperty('link')){
+                    // other links will fall in this
+                    let pageHeader = linkHeaderParse(response.headers._headers.link[0]);
+                    if(pageHeader.hasOwnProperty('next')){
+                        this.settings.posts.next_page_url = pageHeader.next.url;
+                    }
+                    else {
+                        // the last page will fall in this
+                        this.settings.posts.next_page_url = '';
+                        this.settings.posts.last_reached = true;
+                    }
                   }
                   else{
+                    // links which have all posts in one page will fall in this
+                    this.settings.posts.next_page_url = '';
                     this.settings.posts.last_reached = true;
-                    return [];
-                    // after the last_reached is set to true, `fetchBlogPosts` will be returning
-                    // the last request, stop calling `fetchBlogPosts` by checking last_reached
-                    // from external block
                   }
                   return response.json();
               })
               .then((posts)=>{
-                      /*if(this.settings.posts.last_reached){
-                        return [];
-                      }*/
                       return posts.map((post)=>{
                                   return {
                                   body: post.body,
@@ -75,7 +130,7 @@ class blog {
                       });
               })
               .catch(function(e){
-                  console.log(e);
+                  console.log(e.message);
               });
         }
 
@@ -107,13 +162,37 @@ class blog {
         }
 
         fetchBlogPostComments(postId) {
-                let fetchUrl = this.settings.comments.next_page_url || `${this.settings.blogUrl}/${postId}/comments?per_page=${this.settings.posts.per_page}&page=${this.settings.posts.cur_page}`;
-          return fetch(fetchUrl)
-              .then(function(response) {
-                  if (response.status != 200) {
-                          console.log(response.headers);
+          if(this.settings.comments.done_posts.indexOf(postId) !== -1)
+          {
+                  return Promise.resolve([]);
+          }
+          else if(postId !== this.settings.comments.cur_post){
+                  this.settings.comments.next_page_url = '';
+          }
+          this.settings.comments.cur_post = postId;
 
-                          console.log("something bad happned");
+          let fetchUrl = this.settings.comments.next_page_url || `${this.settings.blogUrl}/${postId}/comments?per_page=${this.settings.comments.per_page}&page=1`;
+          return fetch(fetchUrl)
+              .then((response)=>{
+                  if (response.status != 200) {
+                          throw "API responded unexpectedly";
+                  }
+
+                  if(response.headers._headers.hasOwnProperty('link')){
+                    // other links will fall in this
+                    let pageHeader = linkHeaderParse(response.headers._headers.link[0]);
+                    if(pageHeader.hasOwnProperty('next')){
+                        this.settings.comments.next_page_url = pageHeader.next.url;
+                    }
+                    else {
+                        this.settings.comments.next_page_url = '';
+                        this.settings.comments.done_posts = [...this.settings.comments.done_posts,postId];
+                    }
+                  }
+                  else{
+                    // links which have all posts in one page will fall in this
+                    this.settings.comments.next_page_url = '';
+                    this.settings.comments.done_posts = [...this.settings.comments.done_posts,postId];
                   }
                   return response.json();
               })
