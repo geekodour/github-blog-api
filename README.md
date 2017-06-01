@@ -74,7 +74,7 @@ The methods and properties inside the blog object are as follows:
 If `fetchBlogPosts` does not return all results in one page/response, repeated calls to `fetchBlogPosts` will be returning
 next results, once all results are done `blog.settings.posts.last_reached` will be set to `true` and an empty[] will
 be resolved by the promise.
-library user should manually update `blog.settings.posts.last_reached` to false with setPost({last_reached:false})
+library user should manually update `blog.settings.posts.last_reached` to `false` with `setPost({last_reached:false, next_page_url:''})`
 if `fetchBlogPosts` has to be called again after once being called completely.
 
 The same idea applies for `fetchBlogPostComments`. please see code to know how it is implemented.
