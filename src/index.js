@@ -30,12 +30,13 @@ class blog {
         // blog({username:'myusername',repo:'myreponame'})
 
         constructor(options) {
-          if(!(options.username && options.repo)){
+          if(!(options.username && options.repo && options.author )){
               throw "Need username and repo to create blog. Please provide.";
           }
           this.settings = {
                 username: options.username || '',
                 repo: options.repo || '',
+                author: options.author || '',
                 posts: {
                   per_page: 10,
                   last_reached: false,
@@ -89,7 +90,7 @@ class blog {
           }
           let fetchUrl =
                 this.settings.posts.next_page_url
-                || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=1&creator=${this.settings.username}&labels=${labels.join(',')}`;
+                || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=1&creator=${this.settings.author}&labels=${labels.join(',')}`;
 
           return fetch(fetchUrl)
               .then((response)=>{
