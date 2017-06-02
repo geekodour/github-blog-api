@@ -80,5 +80,8 @@ if `fetchBlogPosts` has to be called again after once being called completely.
 The same idea applies for `fetchBlogPostComments`. please see code to know how it is implemented.
 it does not have a `last_reached` so, just specifying other `postId` is enough.
 
+## Contribute
+run `npm run build` to babelify the src files into lib
+
 ## Todo
 - [ ] to add comment wrapper: auth + firebase setup
