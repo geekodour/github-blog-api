@@ -91,7 +91,15 @@ class blog {
                 this.settings.posts.next_page_url
                 || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=1&creator=${this.settings.author}&labels=${labels.join(',')}`;
 
-          return fetch(fetchUrl,{mode:'cors'})
+          return fetch(fetchUrl,
+                  {
+                    mode:'cors',
+                    headers: new Headers({
+                        'Content-Type': 'application/json',
+                        'Accept': "application/vnd.github.v3.html+json"
+                    })
+                  }
+          )
               .then((response)=>{
                   if (response.status != 200) {
                           throw 'API did not respond properly';
@@ -238,6 +246,6 @@ class blog {
         }
 }
 
-module.exports = function (opts) {
+module.exports = function u(opts) {
 	return new blog(opts);
 };
