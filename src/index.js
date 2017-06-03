@@ -91,15 +91,14 @@ class blog {
                 this.settings.posts.next_page_url
                 || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=1&creator=${this.settings.author}&labels=${labels.join(',')}`;
 
-          return fetch(fetchUrl,
-                  {
+          let fetchOpts = {
                     mode:'cors',
                     headers: new Headers({
-                        'Content-Type': 'application/json',
-                        'Accept': "application/vnd.github.v3.html+json"
+                        'Content-Type': 'application/json'
                     })
-                  }
-          )
+                  };
+
+          return fetch(fetchUrl,fetchOpts)
               .then((response)=>{
                   if (response.status != 200) {
                           throw 'API did not respond properly';

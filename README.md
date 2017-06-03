@@ -9,6 +9,8 @@ You can easily make a fully client-side blog using this API, but I made this
 as a helper library for a [gitpushblog](https://github.com/geekodour/gitpushblog)(static github blog generator),
 so some API endpoints might seem a bit odd but it should work fine for a fully client-side blog.
 
+**NOTE: I JUST CHECKED IT, IT DOES NOT WORK PROPERLY IN THE BROWSER, HAS SOME HEADER ISSUE, FIXING IT NOW**
+
 # Installation
 Install github-api-wrapper using npm, it works same on both node and the browser
 ```
