@@ -91,22 +91,15 @@ class blog {
                 this.settings.posts.next_page_url
                 || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=1&creator=${this.settings.author}&labels=${labels.join(',')}`;
 
-          let fetchOpts = {
-                    mode:'cors',
-                    headers: new Headers({
-                        'Content-Type': 'application/json'
-                    })
-                  };
-
-          return fetch(fetchUrl,fetchOpts)
+          return fetch(fetchUrl)
               .then((response)=>{
                   if (response.status != 200) {
                           throw 'API did not respond properly';
                   }
 
-                  if(response.headers._headers.hasOwnProperty('link')){
+                  if(response.headers.has('link')){
                     // other links will fall in this
-                    let pageHeader = linkHeaderParse(response.headers._headers.link[0]);
+                    let pageHeader = linkHeaderParse(response.headers.get('link'));
                     if(pageHeader.hasOwnProperty('next')){
                         this.settings.posts.next_page_url = pageHeader.next.url;
                     }
@@ -190,9 +183,9 @@ class blog {
                           throw "API responded unexpectedly";
                   }
 
-                  if(response.headers._headers.hasOwnProperty('link')){
+                  if(response.headers.has('link')){
                     // other links will fall in this
-                    let pageHeader = linkHeaderParse(response.headers._headers.link[0]);
+                    let pageHeader = linkHeaderParse(response.headers.get('link'));
                     if(pageHeader.hasOwnProperty('next')){
                         this.settings.comments.next_page_url = pageHeader.next.url;
                     }
