@@ -91,7 +91,7 @@ class blog {
                 this.settings.posts.next_page_url
                 || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=1&creator=${this.settings.author}&labels=${labels.join(',')}`;
 
-          return fetch(fetchUrl)
+          return fetch(fetchUrl,{mode:'cors'})
               .then((response)=>{
                   if (response.status != 200) {
                           throw 'API did not respond properly';
