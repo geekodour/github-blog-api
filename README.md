@@ -24,7 +24,7 @@ npm install --save github-blog-api
 // ES5: var blog = require('github-blog-api');
 import blog from 'github-blog-api';
 
-let lazyblog = blog({username:'geekodour',repo:'gitpushblog'});
+let lazyblog = blog({username:'geekodour',repo:'gitpushblog',author:'geekodour'});
 
 // set custom per_page, default is 10
 lazyblog.setPost({per_page:5});
