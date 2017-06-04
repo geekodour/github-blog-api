@@ -103,7 +103,6 @@ class Blog {
                     // responses having a 'link' header
                     let pageHeader = linkHeaderParse(response.headers.get('link'));
 
-                    //if (pageHeader.hasOwnProperty('next')) {
                     if (Object.prototype.hasOwnProperty.call(pageHeader, 'next')) {
                         this.settings.posts.next_page_url = pageHeader.next.url;
                     } else {
@@ -194,7 +193,6 @@ class Blog {
                     // responses having a 'link' header
                     let pageHeader = linkHeaderParse(response.headers.get('link'));
 
-                    //if (pageHeader.hasOwnProperty('next')) {
                     if (Object.prototype.hasOwnProperty.call(pageHeader, 'next')) {
                         this.settings.comments.next_page_url = pageHeader.next.url;
                     }
