@@ -78,7 +78,7 @@ class Blog {
               })
               .catch(err => {
                      if (err) {
-                        err.message = err;
+                        err = err.message;
                      }
                      throw err;
               });
@@ -103,7 +103,8 @@ class Blog {
                     // responses having a 'link' header
                     let pageHeader = linkHeaderParse(response.headers.get('link'));
 
-                    if (pageHeader.hasOwnProperty('next')) {
+                    //if (pageHeader.hasOwnProperty('next')) {
+                    if (Object.prototype.hasOwnProperty.call(pageHeader, 'next')) {
                         this.settings.posts.next_page_url = pageHeader.next.url;
                     } else {
                         // response not having 'next' in 'link' header(last page
@@ -133,7 +134,7 @@ class Blog {
               })
               .catch(err => {
                 if (err) {
-                    err.message = err;
+                    err = err.message;
                 }
                 throw err;
               });
@@ -160,7 +161,7 @@ class Blog {
               })
               .catch(err => {
                 if (err) {
-                    err.message = err;
+                    err = err.message;
                 }
                 throw err;
               });
@@ -193,7 +194,8 @@ class Blog {
                     // responses having a 'link' header
                     let pageHeader = linkHeaderParse(response.headers.get('link'));
 
-                    if (pageHeader.hasOwnProperty('next')) {
+                    //if (pageHeader.hasOwnProperty('next')) {
+                    if (Object.prototype.hasOwnProperty.call(pageHeader, 'next')) {
                         this.settings.comments.next_page_url = pageHeader.next.url;
                     }
                     else {
@@ -226,7 +228,7 @@ class Blog {
               })
               .catch(err => {
                 if (err) {
-                    err.message = err; 
+                    err = err.message;
                 }
                 throw err;
               });
@@ -252,7 +254,7 @@ class Blog {
                         .then(response => response)
                         .catch(err => {
                             if (err) {
-                                err.message = err;
+                                err = err.message;
                             }
                             throw err;
                         });
