@@ -2,7 +2,7 @@ import fetch from 'isomorphic-fetch';
 import marked from 'marked';
 import linkHeaderParse from 'parse-link-header';
 
-const API_URL = "https://api.github.com";
+const API_URL = 'https://api.github.com';
 
 /*
 The methods and properties inside the blog object are as follows:
@@ -24,13 +24,13 @@ The same idea applies for `fetchBlogPostComments`. please see code to know how i
 it does not have a `last_reached` so, just specifying other `postId` is enough.
 */
 
-class blog {
+class Blog {
 
-        // blog({username:'myusername',repo:'myreponame',author:'myusername'})
+        // Blog({username:'myusername',repo:'myreponame',author:'myusername'})
 
         constructor(options) {
-          if(!(options.username && options.repo && options.author )){
-              throw "Need username and repo to create blog. Please provide.";
+          if (!(options.username && options.repo && options.author)) {
+              throw new TypeError('Provide a username and repository to create a blog');
           }
           this.settings = {
                 username: options.username || '',
@@ -52,64 +52,65 @@ class blog {
           };
         }
 
-        setPost(postObj){
-                this.settings.posts = Object.assign(this.settings.posts,postObj);
+        setPost(postObj) {
+                this.settings.posts = Object.assign(this.settings.posts, postObj);
         }
-        setComment(commentObj){
-                this.settings.comments = Object.assign(this.settings.comments,commentObj);
+        setComment(commentObj) {
+                this.settings.comments = Object.assign(this.settings.comments, commentObj);
         }
 
         fetchAllLabels() {
           return fetch(`${this.settings.repoUrl}/labels?per_page=90`)
-              .then((response)=>{
-                  if (response.status != 200) {
-                          return Promise.reject(new Error("API Responded Unexpectedly"));
+              .then(response => {
+                  if (response.status !== 200) {
+                          return Promise.reject(new Error('api responded unexpectedly'));
                   }
                   return response.json();
               })
-              .then((labels)=>{
-                      return labels.map((label)=>{
+              .then(labels => {
+                      return labels.map(label => {
                                   return {
                                   id: label.id,
                                   name: label.name,
                                   color: label.color
-                                  }
+                                  };
                       });
               })
-              .catch(function(err){
-                     return Promise.reject(err);
+              .catch(err => {
+                     if (err) {
+                        err.message = err;
+                     }
+                     throw err;
               });
         }
 
-        fetchBlogPosts(labels=[]) {
+        fetchBlogPosts(labels = []) {
           // need a cleaner and DRY way to write this function
           // it still works
-          if(this.settings.posts.last_reached){
+          if (this.settings.posts.last_reached) {
                   return Promise.resolve([]);
           }
           let fetchUrl =
-                this.settings.posts.next_page_url
-                || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=1&creator=${this.settings.author}&labels=${labels.join(',')}`;
+                this.settings.posts.next_page_url || `${this.settings.blogUrl}?per_page=${this.settings.posts.per_page}&page=1&creator=${this.settings.author}&labels=${labels.join(',')}`;
 
           return fetch(fetchUrl)
-              .then((response)=>{
-                  if (response.status != 200) {
-                          return Promise.reject(new Error("API Responded Unexpectedly"));
+              .then(response => {
+                  if (response.status !== 200) {
+                          return Promise.reject(new Error('api responded unexpectedly'));
                   }
 
-                  if(response.headers.has('link')){
+                  if (response.headers.has('link')) {
                     // responses having a 'link' header
                     let pageHeader = linkHeaderParse(response.headers.get('link'));
-                    if(pageHeader.hasOwnProperty('next')){
+
+                    if (pageHeader.hasOwnProperty('next')) {
                         this.settings.posts.next_page_url = pageHeader.next.url;
-                    }
-                    else {
+                    } else {
                         // response not having 'next' in 'link' header(last page
                         this.settings.posts.next_page_url = '';
                         this.settings.posts.last_reached = true;
                     }
-                  }
-                  else{
+                  } else {
                     // responses which have all posts in one page
                     this.settings.posts.next_page_url = '';
                     this.settings.posts.last_reached = true;
@@ -117,8 +118,8 @@ class blog {
 
                   return response.json();
               })
-              .then((posts)=>{
-                      return posts.map((post)=>{
+              .then(posts => {
+                      return posts.map(post => {
                                   return {
                                   body: post.body,
                                   html: marked(post.body),
@@ -127,23 +128,26 @@ class blog {
                                   date: post.created_at,
                                   labels: post.labels,
                                   comments_no: post.comments
-                                  }
+                                  };
                       });
               })
-              .catch(function(err){
-                  return Promise.reject(err)
+              .catch(err => {
+                if (err) {
+                    err.message = err;
+                }
+                throw err;
               });
         }
 
         fetchBlogPost(postId) {
-          return fetch(this.settings.blogUrl+`/${postId}`)
-              .then(function(response) {
-                  if (response.status != 200) {
-                          return Promise.reject(new Error("API Responded Unexpectedly"));
+          return fetch(this.settings.blogUrl + `/${postId}`)
+              .then(response => {
+                  if (response.status !== 200) {
+                          return Promise.reject(new Error('api responded unexpectedly'));
                   }
                   return response.json();
               })
-              .then((post)=>{
+              .then(post => {
                  return {
                          title: post.title,
                          id: post.number,
@@ -154,60 +158,60 @@ class blog {
                          html: marked(post.body)
                         };
               })
-              .catch(function(err){
-                  return Promise.reject(err)
+              .catch(err => {
+                if (err) {
+                    err.message = err;
+                }
+                throw err;
               });
         }
 
         fetchBlogPostComments(postId) {
-          // if `comments.done_posts` has the postId, no need to fetch
-          if(this.settings.comments.done_posts.indexOf(postId) !== -1)
-          {
-                  return Promise.resolve([]);
-          }
-
-          // manually set comments.next_page_url to an empty string
-          // so that fetchUrl starts from page 1
-          else if(postId !== this.settings.comments.cur_post){
-                  this.settings.comments.next_page_url = '';
-          }
+            // if `comments.done_posts` has the postId, no need to fetch
+            if (this.settings.comments.done_posts.indexOf(postId) !== -1) {
+                return Promise.resolve([]);
+            }
+            // manually set comments.next_page_url to an empty string
+            // // // so that fetchUrl starts from page 1
+            else if (postId !== this.settings.comments.cur_post) {
+                this.settings.comments.next_page_url = '';
+            }
 
           // update comments.cur_post to postId
           this.settings.comments.cur_post = postId;
 
           let fetchUrl =
-                  this.settings.comments.next_page_url
-                  || `${this.settings.blogUrl}/${postId}/comments?per_page=${this.settings.comments.per_page}&page=1`;
+                  this.settings.comments.next_page_url || `${this.settings.blogUrl}/${postId}/comments?per_page=${this.settings.comments.per_page}&page=1`;
 
           return fetch(fetchUrl)
-              .then((response)=>{
-                  if (response.status != 200) {
-                          return Promise.reject(new Error("API Responded Unexpectedly"));
+              .then(response => {
+                  if (response.status !== 200) {
+                          return Promise.reject(new Error('api responded unexpectedly'));
                   }
 
-                  if(response.headers.has('link')){
+                  if (response.headers.has('link')) {
                     // responses having a 'link' header
                     let pageHeader = linkHeaderParse(response.headers.get('link'));
 
-                    if(pageHeader.hasOwnProperty('next')){
+                    if (pageHeader.hasOwnProperty('next')) {
                         this.settings.comments.next_page_url = pageHeader.next.url;
                     }
                     else {
                         // response not having 'next' in 'link' header(last page)
                         this.settings.comments.next_page_url = '';
-                        this.settings.comments.done_posts = [...this.settings.comments.done_posts,postId];
+                        this.settings.comments.done_posts = [...this.settings.comments.done_posts, postId];
                     }
                   }
-                  else{
+                  else {
                     // responses which have all comments in one page
                     this.settings.comments.next_page_url = '';
-                    this.settings.comments.done_posts = [...this.settings.comments.done_posts,postId];
+                    this.settings.comments.done_posts = [...this.settings.comments.done_posts, postId];
                   }
 
                   return response.json();
               })
-              .then(function(comments) {
-                      return comments.map(comment=>{
+              .then(comments => {
+                      return comments.map(comment => {
                         return {
                           id: comment.id,
                           user: {
@@ -217,36 +221,44 @@ class blog {
                           body: comment.body,
                           created_at: comment.created_at,
                           html: marked(comment.body)
-                        }
+                        };
                       });
               })
-              .catch(function(err){
-                  return Promise.reject(err);
+              .catch(err => {
+                if (err) {
+                    err.message = err; 
+                }
+                throw err;
               });
         }
 
-        createPost(postObj,PERSONAL_ACCESS_TOKEN){
-                if(!(postObj && PERSONAL_ACCESS_TOKEN)){
-                    throw "Need PostObject and AUTH TOKEN to create, please provide";
+        createPost(postObj, PERSONAL_ACCESS_TOKEN) {
+                if (!(postObj && PERSONAL_ACCESS_TOKEN)) {
+                    throw new TypeError('Provide PostObject and AUTH_TOKEN to create posts');
                 }
 
                 // I am keeping it to gitpushblog repo untill API is done
                 // don't want to post issues to other repos as of now
                 // when developing
-                return fetch(API_URL+"/repos/geekodour/gitpushblog/issues", {
+                return fetch(`${API_URL}/repos/geekodour/gitpushblog/issues`, {
                            method: 'post',
                            headers: new Headers({
                                'Content-Type': 'application/json',
-                               'Authorization': 'Basic '+ PERSONAL_ACCESS_TOKEN
+                               'Authorization': 'Basic ' + PERSONAL_ACCESS_TOKEN
                            }),
                            body: JSON.stringify(postObj)
                         })
-                        .then(response=>response.json())
-                        .then(response=>response)
-                        .catch(err=>Promise.reject(err));
+                        .then(response => response.json())
+                        .then(response => response)
+                        .catch(err => {
+                            if (err) {
+                                err.message = err;
+                            }
+                            throw err;
+                        });
         }
 }
 
-module.exports = function u(opts) {
-	return new blog(opts);
+module.exports = opts => {
+	return new Blog(opts);
 };
