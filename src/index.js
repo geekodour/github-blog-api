@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import marked from 'marked';
+import slugify from 'slugify';
 import linkHeaderParse from 'parse-link-header';
 
 const API_URL = 'https://api.github.com';
@@ -70,9 +71,9 @@ class Blog {
               .then(labels => {
                       return labels.map(label => {
                                   return {
-                                  id: label.id,
                                   name: label.name,
-                                  color: label.color
+                                  color: label.color,
+                                  slug: slugify(label.name)
                                   };
                       });
               })
@@ -125,8 +126,11 @@ class Blog {
                                   html: marked(post.body),
                                   id: post.number,
                                   title: post.title,
+                                  slug: slugify(post.title),
                                   date: post.created_at,
-                                  labels: post.labels,
+                                  labels: post.labels.map(label=>
+                                    ({name:label.name,color:label.color,slug:slugify(label.name)})
+                                  ),
                                   comments_no: post.comments
                                   };
                       });
@@ -150,8 +154,11 @@ class Blog {
               .then(post => {
                  return {
                          title: post.title,
+                         slug: slugify(post.title),
                          id: post.number,
-                         labels: post.labels,
+                         labels: post.labels.map(label=>
+                           ({name:label.name,color:label.color,slug:slugify(label.name)})
+                         ),
                          comments: post.comments,
                          date: post.created_at,
                          body: post.body,
