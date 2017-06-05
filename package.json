@@ -1,6 +1,6 @@
 {
   "name": "github-blog-api",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "a github api wrapper exposing endpoints for a blog",
   "main": "lib/index.js",
   "scripts": {
@@ -26,7 +26,8 @@
     "es6-promise": "4.1.0",
     "isomorphic-fetch": "2.2.1",
     "marked": "0.3.6",
-    "parse-link-header": "1.0.0"
+    "parse-link-header": "1.0.0",
+    "slugify": "1.1.0"
   },
   "devDependencies": {
     "ava": "0.19.1",
