@@ -6,23 +6,7 @@ import linkHeaderParse from 'parse-link-header';
 const API_URL = 'https://api.github.com';
 
 /*
-The methods and properties inside the blog object are as follows:
-* `blog.settings` : this is the state container of the blog
-* `setPost` and `setComment` : to update the `posts` and `comments` objects inside `blog.settings`
-* `fetchAllLabels` : fetch all labels in the blog - does not contain the issue count **[Need help]**
-* `fetchBlogPosts` : fetches blog posts based on the `posts` object, takes `labels[]` as argument
-* `fetchBlogPost` : fetches a single blog post, takes `issueId/postId` as argument
-* `fetchBlogPostComments` : fetches comments based on the `comments` object, takes `issueId/postId` as argument
-
-## Note on `fetchBlogPosts` usage:
-If `fetchBlogPosts` does not return all results in one page/response, repeated calls to `fetchBlogPosts` will be returning
-next results, once all results are done `blog.settings.posts.last_reached` will be set to `true` and an empty[] will
-be resolved by the promise.
-library user should manually update `blog.settings.posts.last_reached` to `false` with `setPost({last_reached:false, next_page_url:''})`
-if `fetchBlogPosts` has to be called again after once being called completely.
-
-The same idea applies for `fetchBlogPostComments`. please see code to know how it is implemented.
-it does not have a `last_reached` so, just specifying other `postId` is enough.
+ * please refer README.md for descriptions
 */
 
 class Blog {
@@ -54,10 +38,10 @@ class Blog {
         }
 
         setPost(postObj) {
-                this.settings.posts = Object.assign(this.settings.posts, postObj);
+          this.settings.posts = Object.assign(this.settings.posts, postObj);
         }
         setComment(commentObj) {
-                this.settings.comments = Object.assign(this.settings.comments, commentObj);
+          this.settings.comments = Object.assign(this.settings.comments, commentObj);
         }
 
         fetchAllLabels() {
@@ -113,6 +97,7 @@ class Blog {
                     }
                   } else {
                     // responses which have all posts in one page
+                    // i.e having no 'link' header
                     this.settings.posts.next_page_url = '';
                     this.settings.posts.last_reached = true;
                   }
@@ -239,8 +224,8 @@ class Blog {
               });
         }
 
-        createPost(postObj, PERSONAL_ACCESS_TOKEN) {
-                if (!(postObj && PERSONAL_ACCESS_TOKEN)) {
+        createPost(postObj, AUTH_TOKEN) {
+                if (!(postObj && AUTH_TOKEN)) {
                     throw new TypeError('Provide PostObject and AUTH_TOKEN to create posts');
                 }
 
@@ -251,9 +236,32 @@ class Blog {
                            method: 'post',
                            headers: new Headers({
                                'Content-Type': 'application/json',
-                               'Authorization': 'Basic ' + PERSONAL_ACCESS_TOKEN
+                               'Authorization': 'Basic ' + AUTH_TOKEN
                            }),
                            body: JSON.stringify(postObj)
+                        })
+                        .then(response => response.json())
+                        .then(response => response)
+                        .catch(err => {
+                            if (err) {
+                                err = err.message;
+                            }
+                            throw err;
+                        });
+        }
+
+        createComment(commentObj,postId,AUTH_TOKEN) {
+                if (!(commentObj && postId && AUTH_TOKEN)) {
+                    throw new TypeError('Provide commentObj, postId and AUTH_TOKEN to create comments');
+                }
+
+                return fetch(`${API_URL}/repos/geekodour/gitpushblog/issues/${postId}/comments`, {
+                           method: 'post',
+                           headers: new Headers({
+                               'Content-Type': 'application/json',
+                               'Authorization': 'token ' + AUTH_TOKEN
+                           }),
+                           body: JSON.stringify(commentObj)
                         })
                         .then(response => response.json())
                         .then(response => response)
