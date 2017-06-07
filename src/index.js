@@ -264,7 +264,17 @@ class Blog {
                            body: JSON.stringify(commentObj)
                         })
                         .then(response => response.json())
-                        .then(response => response)
+                        .then(comment =>({
+                          id: comment.id,
+                          user: {
+                                  username: comment.user.login,
+                                  avatar_url: comment.user.avatar_url
+                          },
+                          body: comment.body,
+                          created_at: comment.created_at,
+                          html: marked(comment.body)
+                          })
+                        )
                         .catch(err => {
                             if (err) {
                                 err = err.message;
