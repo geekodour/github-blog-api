@@ -5,22 +5,15 @@ import linkHeaderParse from 'parse-link-header';
 
 const API_URL = 'https://api.github.com';
 
-/*
- * please refer README.md for descriptions
-*/
-
 class Blog {
-
-        // Blog({username:'myusername',repo:'myreponame',author:'myusername'})
-
         constructor(options) {
           if (!(options.username && options.repo && options.author)) {
               throw new TypeError('Provide a username and repository to create a blog');
           }
           this.settings = {
-                username: options.username || '',
-                repo: options.repo || '',
-                author: options.author || '',
+                username: options.username,
+                repo: options.repo,
+                author: options.author,
                 posts: {
                   per_page: 10,
                   last_reached: false,
