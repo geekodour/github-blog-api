@@ -1,22 +1,27 @@
-A github api wrapper exposing endpoints for a blog
+## github-blog-api [![Build Status](https://travis-ci.org/geekodour/github-blog-api.svg?branch=master)](https://travis-ci.org/geekodour/github-blog-api)
 
-# What is the github-blog-api
-This api wrapper enables you to run a blog using the github API.
-It uses *github issues* as posts and *issue labels* as tags and github comments as comments
+> A github api wrapper exposing endpoints for a blog
+
+### What is the `github-blog-api`?
+
+This API wrapper enables you to run a blog using the GitHub API.
+It uses `github issues` as __`posts`__ and `issue labels` as __`tags`__ and `GitHub comments` as __`comments`__
 very conviently.
 
 You can easily make a fully client-side blog using this API, but I made this
-as a helper library for a [gitpushblog](https://github.com/geekodour/gitpushblog)(static github blog generator),
+as a helper library for a [`gitpushblog`](https://github.com/geekodour/gitpushblog)(static github blog generator),
 so some API endpoints might seem a bit odd but it should work fine for a fully client-side blog.
 
 
-# Installation
+## Installation
+
 Install github-api-wrapper using npm, it works same on both node and the browser
+
 ```
-npm install --save github-blog-api
+$ npm install --save github-blog-api
 ```
 
-# Usage
+## Usage
 
 ### Basic Usage
 
@@ -72,6 +77,7 @@ The methods and properties inside the blog object are as follows:
 * `fetchBlogPostComments` : fetches comments based on the `comments` object, takes `issueId/postId` as argument
 
 ## Note on `fetchBlogPosts` usage:
+
 If `fetchBlogPosts` does not return all results in one page/response, repeated calls to `fetchBlogPosts` will be returning
 next results, once all results are done `blog.settings.posts.last_reached` will be set to `true` and an empty[] will
 be resolved by the promise.
@@ -82,7 +88,7 @@ The same idea applies for `fetchBlogPostComments`. please see code to know how i
 it does not have a `last_reached` so, just specifying other `postId` is enough.
 
 ## Contribute
-run `npm run build` to babelify the src files into lib
+- run `npm run build` to babelify the src files into lib
 
 ## Todo
 - [ ] to add comment wrapper: auth + firebase setup

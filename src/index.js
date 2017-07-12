@@ -19,9 +19,9 @@ class Blog {
               throw new TypeError('Provide a username and repository to create a blog');
           }
           this.settings = {
-                username: options.username || '',
-                repo: options.repo || '',
-                author: options.author || '',
+                username: options.username,
+                repo: options.repo,
+                author: options.author,
                 posts: {
                   per_page: 10,
                   last_reached: false,
