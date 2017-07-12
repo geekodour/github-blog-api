@@ -27,7 +27,7 @@
     "isomorphic-fetch": "2.2.1",
     "marked": "0.3.6",
     "parse-link-header": "1.0.0",
-    "slugify": "1.1.0"
+    "slug": "0.9.1"
   },
   "devDependencies": {
     "ava": "0.19.1",

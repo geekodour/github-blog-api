@@ -1,6 +1,7 @@
 import fetch from 'isomorphic-fetch';
 import marked from 'marked';
-import slugify from 'slugify';
+//import slugify from 'slugify';
+import {slugify} from './utils';
 import linkHeaderParse from 'parse-link-header';
 
 const API_URL = 'https://api.github.com';
@@ -232,7 +233,7 @@ class Blog {
                 // I am keeping it to gitpushblog repo untill API is done
                 // don't want to post issues to other repos as of now
                 // when developing
-                return fetch(`${API_URL}/repos/geekodour/gitpushblog/issues`, {
+                return fetch(`${API_URL}/repos/${this.settings.username}/${this.settings.repo}/issues`, {
                            method: 'post',
                            headers: new Headers({
                                'Content-Type': 'application/json',
@@ -255,7 +256,7 @@ class Blog {
                     throw new TypeError('Provide commentObj, postId and AUTH_TOKEN to create comments');
                 }
 
-                return fetch(`${API_URL}/repos/geekodour/gitpushblog/issues/${postId}/comments`, {
+                return fetch(`${API_URL}/repos/${this.settings.username}/${this.settings.repo}/issues/${postId}/comments`, {
                            method: 'post',
                            headers: new Headers({
                                'Content-Type': 'application/json',
