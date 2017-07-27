@@ -1,4 +1,5 @@
 ## github-blog-api [![Build Status](https://travis-ci.org/geekodour/github-blog-api.svg?branch=master)](https://travis-ci.org/geekodour/github-blog-api)
+### readme is not uptodate, will update soon - 27th July
 
 > A github api wrapper exposing endpoints for a blog
 
